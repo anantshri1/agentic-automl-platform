@@ -207,3 +207,28 @@ The system is designed for deployment as:
 Local Docker Compose stack
 Hugging Face Spaces (lightweight frontend variant)
 Cloud deployment (AWS / GCP) with scalable backend workers
+
+## Stage 4 Design
+
+```
+curl POST /run (FastAPI, port 8000)
+        │
+        │ HTTP call
+        ▼
+Orchestrator service (LangGraph, port 8002)
+        │
+        │  ReAct loop: LLM decides what to call
+        ▼
+   Gemini 3.1 Flash-Lite
+        │
+        │  tool calls via langchain-mcp-adapters
+        ▼
+MCP Server (port 8001)
+  ├── profile_dataset
+  ├── detect_problem_type
+  ├── train_model
+  └── evaluate_model
+        │
+        ▼
+   MLflow (port 5001)
+```

@@ -208,7 +208,43 @@ The system is designed for deployment as:
 Local Docker Compose stack
 Hugging Face Spaces (lightweight frontend variant)
 Cloud deployment (AWS / GCP) with scalable backend workers
+----
+## Backend CURL commands
 
+uploading new file:
+```
+curl -X POST http://localhost:8000/upload -F "file=@irrigation_prediction.csv"
+```
+
+running algorithm:
+```
+curl -X POST http://localhost:8000/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_id": "4a09744a-5a9b-4154-93dc-740e8ef51a8d",
+    "filename": "irrigation_prediction.csv",
+    "target_column": "Irrigation_Need"
+  }'
+```
+
+finding files:
+```
+docker exec -it automl-platform-backend-1 ls /app/data/ | grep 4a09744a-5a9b-4154-93dc-740e8ef51a8d
+```
+
+prediction:
+```
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_id": "4a09744a-5a9b-4154-93dc-740e8ef51a8d",
+    "train_filename": "4a09744a-5a9b-4154-93dc-740e8ef51a8d_irrigation_prediction_cleaned.csv",
+    "test_filename": "a6111549-af79-4e6f-92e8-16841d761e2d_test_soil.csv",                         
+    "model_type": "random_forest"
+  }'
+
+```
+---
 ## Stage 4 Design
 
 ```

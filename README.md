@@ -103,6 +103,31 @@ curl -X POST http://localhost:8000/predict \
 ---
 ## Dockerized Architecture 
 
+The system runs as five containers managed by Docker Compose, sharing a single named volume (`ml_data`) mounted at `/app/data/` in both the backend and MCP server containers. This is the mechanism by which the MCP server writes model artifacts that the backend later reads at `/predict time` — there is no artifact transfer over `HTTP`, just a shared filesystem.
+```
+┌─────────────┐     ┌──────────────┐     ┌──────────────┐
+│  frontend   │────▶│   backend    │────▶│ orchestrator │
+│  (7860)     │     │   (8000)     │     │   (8002)     │
+└─────────────┘     └──────────────┘     └──────────────┘
+                          │                      │
+                          │                      ▼
+                    ┌─────┴──────┐     ┌──────────────────┐
+                    │   mlflow   │◀────│   mcp-server     │
+                    │  (5001)    │     │    (8001)        │
+                    └────────────┘     └──────────────────┘
+                                              │
+                                       ml_data volume
+                                       /app/data/
+```
+
+### Why a named volume over a bind mount for data?
+The `ml_data` volume is shared between `backend` and `mcp-server`. A named Docker volume (rather than a bind mount to a host directory) was chosen because it avoids the file permission issues that arise when containers run as non-root users and write to host-owned directories. The tradeoff is that artifacts are not directly browsable from the host without `docker exec —` acceptable during development.
+
+The `backend` and `mcp_server` source directories are still bind-mounted (`./backend:/app`, `./mcp_server:/app`) so that code changes reflect immediately without a rebuild.
+
+### Service startup ordering
+The MCP server needs to be reachable before the orchestrator finishes initializing, because the orchestrator loads all tools from MCP at startup via get_tools(). Docker Compose's depends_on is not sufficient here — it waits for the container to start, not for the `HTTP` server inside it to be ready. The orchestrator handles this with an explicit retry loop (10 attempts, 3-second delay) before failing hard. This was a real failure mode discovered during early runs.
+
 ---
 ## MCP Tool Server
 

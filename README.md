@@ -6,7 +6,7 @@ The Agentic AutoML Platform is an end-to-end machine learning system that automa
 The system allows users to upload structured datasets (CSV) and interact in natural language to perform data analysis, model training, evaluation, and experimentation. The core idea is to shift AutoML from static optimization into an agentic workflow system with observability, control, and extensibility.
 
 **Key Features**
-1. **Natural Language ML Workflow Interface**: Users can describe tasks such as: “Predict house prices”, “Compare XGBoost vs Random Forest”; the agent translates these into structured ML workflows.
+1. **Natural Language ML Workflow Interface**: Users can describe tasks such as: *“Predict house prices”*, *“Compare XGBoost vs Random Forest”*; the agent translates these into structured ML workflows.
 2. **Agentic AutoML Engine (LangGraph-based)**: The system uses a graph-based reasoning engine that dynamically constructs ML pipelines. The agent is a *ReAct-style agent* (Reason + Act loop) following the general pattern:
 ```
 user message

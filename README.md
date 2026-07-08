@@ -1,7 +1,7 @@
 # Agentic AutoML Platform
 > **(Or, the time I used gradient descent to destroy the gradient descent)**
 
-The Agentic AutoML Platform is an end-to-end machine learning system that automates the full lifecycle of tabular ML workflows using an LLM-driven orchestration layer. Instead of treating AutoML as a black-box model selection tool, this system decomposes the ML pipeline into modular, composable tools exposed via an MCP (Model Context Protocol) server and orchestrated through a LangGraph-based agent.
+The Agentic AutoML Platform is an end-to-end machine learning system that automates the full lifecycle of tabular ML workflows using an LLM-driven orchestration layer. Instead of treating AutoML as a black-box model-selection tool, this system decomposes the ML pipeline into modular, composable tools exposed via an MCP (Model Context Protocol) server and orchestrated by a LangGraph-based agent.
  
 The system allows users to upload structured datasets (CSV) and interact in natural language to perform data analysis, model training, evaluation, and experimentation. The core idea is to shift AutoML from static optimization into an agentic workflow system with observability, control, and extensibility.
 
@@ -45,6 +45,24 @@ This enables reproducibility and comparison across experiments.
 ---
 ## Backend Design (via `FastAPI`)
 
+The backend is a production-style `FastAPI` service that acts as the system's front door. It exposes four `REST` endpoints (`/upload`, `/run`, `/job/{id}`, `/predict`) and is deliberately kept thin — its job is request handling and orchestration routing, not ML logic.
+
+### Why `FastAPI` over `Flask`?
+`FastAPI` is async-native, which matters here because the `/run` endpoint makes a long-running `HTTP` call to the orchestrator (which itself runs a multi-step LLM+tool loop). With Flask's synchronous model, that call would block the server thread for the entire duration of the agent run. With `FastAPI`'s `async def` endpoints, the event loop can handle other requests while waiting. For a system where a single workflow can take 60–200 seconds, this isn't a minor detail.
+`FastAPI` also auto-generates OpenAPI documentation at `/docs` from `Pydantic` models, which was useful for debugging request shapes during development.
+
+### `Request`/`Response` contracts via `Pydantic`
+Every endpoint's input and output is defined as a `Pydantic` model in `models.py`. This enforced a discipline that paid off repeatedly: when the `problem_type` field needed to be threaded from `/run` through to `/predict`, having a typed `RunResponse` meant the compiler (and `FastAPI`'s validator) caught mismatches immediately rather than at runtime. The `PredictRequest` model similarly carries `problem_type` so the predict route can branch correctly between `sklearn`, `FFN`, and forecasting paths without inspecting filenames.
+
+### The `/run → orchestrator` handoff
+The `/run` endpoint does one direct MCP call itself — `detect_problem_type` — before delegating to the orchestrator. This is intentional: the problem type needs to be returned in the `RunResponse` so the `Gradio` frontend can immediately update its UI (toggling between a file upload widget and an image output for forecasting). Relying on the agent to surface this in free-form text would have been fragile. The rest of the workflow is handed off to the orchestrator via an `httpx.AsyncClient` `POST` to `http://orchestrator:8002/invoke`.
+
+### Artifact path conventions
+One of the harder-won lessons from this project was that path conventions across independently-built services are load-bearing. The backend's `/predict` endpoint reconstructs artifact paths that were originally written by the MCP server's tools — it never gets those paths handed to it directly. Two stems drive this:
+* `base_cleaned`: the stem for all model artifacts (e.g. `{job_id}_{filename}_cleaned`)
+* `base_raw`: split from base_cleaned for encoder and label map files, because clean_dataset saves those before writing the `_cleaned` suffix
+
+Getting these wrong caused cascading failures that were non-obvious to debug, because each individual path looked plausible. The fix was writing them down explicitly and treating them as a convention, not an implementation detail.
 
 
 ---

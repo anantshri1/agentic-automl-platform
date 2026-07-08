@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+langchain-google-genai          # LangChain Google GenAI integration
+langchain-mcp-adapters          # LangChain MCP Adapters integration
+langgraph                       # Agent Graph Framework
+httpx                           # async HTTP client for Python

@@ -1,0 +1,60 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ml_data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      - mlflow
+  
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.13.0
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./tracking:/mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri /mlflow
+      --default-artifact-root /mlflow/artifacts
+
+  mcp-server:             
+    build: ./mcp_server
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./mcp_server:/app
+      - ml_data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      - mlflow
+  
+  orchestrator:
+    build: ./orchestrator
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./orchestrator:/app
+    env_file:
+      - .env
+    depends_on:
+      - mcp-server
+  
+  frontend:
+    build: ./frontend
+    ports:
+      - "7860:7860"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+
+volumes:
+  ml_data:

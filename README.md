@@ -42,6 +42,54 @@ This enables reproducibility and comparison across experiments.
 6. **Observability Layer (LangSmith)**: The system is instrumented with LangSmith to track agent decision paths, tool calls, latency per step, prompt versions, and failure modes. This provides full transparency into the agent’s reasoning process. 
 7. **Dockerized Architecture**: The entire system is containerized for reproducibility and deployment.
  
+---
+## Backend Design (via `FastAPI`)
+
+
+
+---
+## Dockerized Architecture 
+
+---
+## MCP Tool Server
+
+---
+## `LangGraph` Orchestrator and `LangSmith` for Observability
+
+```
+curl POST /run (FastAPI, port 8000)
+        │
+        │ HTTP call
+        ▼
+Orchestrator service (LangGraph, port 8002)
+        │
+        │  ReAct loop: LLM decides what to call
+        ▼
+   Gemini 3.1 Flash-Lite
+        │
+        │  tool calls via langchain-mcp-adapters
+        ▼
+MCP Server (port 8001)
+  ├── profile_dataset
+  ├── detect_problem_type
+  ├── train_model
+  └── evaluate_model
+        │
+        ▼
+   MLflow (port 5001)
+```
+
+---
+## `scikit-learn` and `TensorFlow` Implementations
+
+---
+## Frontend Design and UI
+
+----
+## References
+* **Model Context Protocol (MCP) at First Glance: Studying the Security and Maintainability of MCP Servers**, Mohammed Mehedi Hasan, Hao Li, Emad Fallahzadeh, Gopi Krishnan Rajbahadur, Bram Adams, Ahmed E. Hassan. (2026). [arXiv:2506.13538v5](https://arxiv.org/abs/2506.13538).
+* **Model Context Protocol Explained in 3 Levels of Difficulty**, Bala Priya C. (2026). [(here)](https://machinelearningmastery.com/model-context-protocol-explained-in-3-levels-of-difficulty/)
+* **AutoML-Agent: A Multi-Agent LLM Framework for Full-Pipeline AutoML**, Patara Trirat, Wonyong Jeong, Sung Ju Hwang. (2024). [arXiv:2410.02958](https://arxiv.org/abs/2410.02958).
 
 ----
 ## Backend CURL commands
@@ -79,28 +127,6 @@ curl -X POST http://localhost:8000/predict \
   }'
 
 ```
----
-## Stage 4 Design
 
-```
-curl POST /run (FastAPI, port 8000)
-        │
-        │ HTTP call
-        ▼
-Orchestrator service (LangGraph, port 8002)
-        │
-        │  ReAct loop: LLM decides what to call
-        ▼
-   Gemini 3.1 Flash-Lite
-        │
-        │  tool calls via langchain-mcp-adapters
-        ▼
-MCP Server (port 8001)
-  ├── profile_dataset
-  ├── detect_problem_type
-  ├── train_model
-  └── evaluate_model
-        │
-        ▼
-   MLflow (port 5001)
-```
+
+

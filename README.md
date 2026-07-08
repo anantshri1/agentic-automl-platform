@@ -64,6 +64,41 @@ One of the harder-won lessons from this project was that path conventions across
 
 Getting these wrong caused cascading failures that were non-obvious to debug, because each individual path looked plausible. The fix was writing them down explicitly and treating them as a convention, not an implementation detail.
 
+### Backend CURL commands
+
+* Uploading new file:
+```
+curl -X POST http://localhost:8000/upload -F "file=@irrigation_prediction.csv"
+```
+
+* Running algorithm:
+```
+curl -X POST http://localhost:8000/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_id": "4a09744a-5a9b-4154-93dc-740e8ef51a8d",
+    "filename": "irrigation_prediction.csv",
+    "target_column": "Irrigation_Need"
+  }'
+```
+
+* Finding files:
+```
+docker exec -it automl-platform-backend-1 ls /app/data/ | grep 4a09744a-5a9b-4154-93dc-740e8ef51a8d
+```
+
+* Prediction:
+```
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_id": "4a09744a-5a9b-4154-93dc-740e8ef51a8d",
+    "train_filename": "4a09744a-5a9b-4154-93dc-740e8ef51a8d_irrigation_prediction_cleaned.csv",
+    "test_filename": "a6111549-af79-4e6f-92e8-16841d761e2d_test_soil.csv",                         
+    "model_type": "random_forest"
+  }'
+
+```
 
 ---
 ## Dockerized Architecture 
@@ -109,42 +144,7 @@ MCP Server (port 8001)
 * **Model Context Protocol Explained in 3 Levels of Difficulty**, Bala Priya C. (2026). [(here)](https://machinelearningmastery.com/model-context-protocol-explained-in-3-levels-of-difficulty/)
 * **AutoML-Agent: A Multi-Agent LLM Framework for Full-Pipeline AutoML**, Patara Trirat, Wonyong Jeong, Sung Ju Hwang. (2024). [arXiv:2410.02958](https://arxiv.org/abs/2410.02958).
 
-----
-## Backend CURL commands
 
-uploading new file:
-```
-curl -X POST http://localhost:8000/upload -F "file=@irrigation_prediction.csv"
-```
-
-running algorithm:
-```
-curl -X POST http://localhost:8000/run \
-  -H "Content-Type: application/json" \
-  -d '{
-    "job_id": "4a09744a-5a9b-4154-93dc-740e8ef51a8d",
-    "filename": "irrigation_prediction.csv",
-    "target_column": "Irrigation_Need"
-  }'
-```
-
-finding files:
-```
-docker exec -it automl-platform-backend-1 ls /app/data/ | grep 4a09744a-5a9b-4154-93dc-740e8ef51a8d
-```
-
-prediction:
-```
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "job_id": "4a09744a-5a9b-4154-93dc-740e8ef51a8d",
-    "train_filename": "4a09744a-5a9b-4154-93dc-740e8ef51a8d_irrigation_prediction_cleaned.csv",
-    "test_filename": "a6111549-af79-4e6f-92e8-16841d761e2d_test_soil.csv",                         
-    "model_type": "random_forest"
-  }'
-
-```
 
 
 

@@ -236,7 +236,7 @@ For forecasting, the frontend sends a predict request with an empty `test_filena
 ---
 ### Deployment
 
-`TensorFlow` imports increase the total size of the Dockerized images to 8GB; as such, the app was not deployed on HF spaces. To run the contents of this repository, fork it and run `docker compose up --build`. 
+`TensorFlow` imports increase the total size of the Dockerized images to 8GB; as such, the app was not deployed on HF spaces. To run the contents of this repository, fork it, set environmental variables in `.env` and run `docker compose up --build`. 
 
 > Contact the owner if you encounter a problem.
 

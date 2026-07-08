@@ -30,7 +30,7 @@ The agent is capable of ingesting data, detecting the type of problem (classific
  
 4. **FastAPI Backend**: A production-style backend exposes the system via `REST APIs`. The backend handles job scheduling, state management, caching results and tool routing via MCP.
  
-5. **Experiment Tracking (MLflow Integration)**: Every run is fully tracked:
+5. **Experiment Tracking (`MLflow` Integration)**: Every run is fully tracked via `Mlflow`:
  - model parameters
  - metrics (accuracy, RMSE, F1, etc.)
  - feature sets
@@ -39,7 +39,7 @@ The agent is capable of ingesting data, detecting the type of problem (classific
 
 This enables reproducibility and comparison across experiments.
 
-6. **Observability Layer (LangSmith)**: The system is instrumented with LangSmith to track agent decision paths, tool calls, latency per step, prompt versions, and failure modes. This provides full transparency into the agent’s reasoning process. 
+6. **Observability Layer (`LangSmith`)**: The system is instrumented with `LangSmith` to track agent decision paths, tool calls, latency per step, prompt versions, and failure modes. This provides full transparency into the agent’s reasoning process. 
 7. **Dockerized Architecture**: The entire system is containerized for reproducibility and deployment.
  
 ---
